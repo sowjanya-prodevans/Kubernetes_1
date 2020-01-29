@@ -1,0 +1,27 @@
+Introduction: 
+This Document refer Install kubernetes dashboard is GUI for kubernetes cluster. 
+Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. 
+Kubernetes user interface which is used to deploy containerized applications to a Kubernetes cluster, troubleshoot the applications, and manage the cluster itself along with its attendant resources.
+	Uses of Kubernetes Dashboard
+•	To get an overview of applications running on your cluster.
+•	To create or modify the individual Kubernetes resources, e.g. deployments, jobs, etc.
+•	It provides the information on the state of Kubernetes resources in your cluster, and on any errors that may have occurred.
+To deploy Dashboard, execute following command:
+ $ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc1/aio/deploy/recommended.yaml
+To access Dashboard from local workstation so must create a secure channel to your Kubernetes cluster. Run the following command:
+$ kubectl proxy
+Now access Dashboard at using the 
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+You will then be prompted with this page, to enter the credentials:
+ 
+Next we will create the service account for the dashboard and get its credentials.
+Note: Run all these commands in a new terminal, otherwise your kubectl proxy command will stop.
+Run the following commands:
+This command will create a service account for a dashboard in the default namespace
+$ kubectl create serviceaccount dashboard -n default
+Add the cluster binding rules to your dashboard account
+$ kubectl create clusterrolebinding dashboard-admin -n default \ --clusterrole=cluster-admin \ --serviceaccount=default:dashboard
+Copy the secret token required for your dashboard login using the below command:
+$ kubectl get secret $(kubectl get serviceaccount dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 –decode
+Copy the secret token and paste it in Dashboard Login Page, by selecting a token option. After Sign In you will land on the Kubernetes Homepage.
+We'll see the home/welcome page in which you can view which system applications are running by default in the Home Page kube-system namespace of your cluster, for example, the Dashboard itself. 
