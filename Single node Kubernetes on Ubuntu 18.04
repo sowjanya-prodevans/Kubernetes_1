@@ -91,3 +91,17 @@ $ kubectl config view
 
 $ kubectl get pods
 
+Kubernetes Providing Dashboard service. It allows you to manage your cluster without interacting with a command line.
+Note: By default, Kubernetes comes with web dashboard that can be used to manage your cluster. The dashboard addon is installed and enabled by default on minikube
+	How to check addon list on Minikube
+
+# minikube addons list
+
+	 To open directly on your default Browser. So get the URL of the Dashboard run the following command
+
+# minikube dashboard
+# minikube dashboard-url
+
+Access Kubernetes Dashboard by opening the URL on your favourite browser. 
+
+
