@@ -1,0 +1,95 @@
+KAFKA/ZOOKEEPER CLUSTER ON KUBERNETES
+Introduction: 
+This Document explains how to deploy single node Kafka/zookeeper cluster with docker and kubernetes.
+ Kubernetes: 
+                      It is a container management system developed in the Google platform. It helps you to manage a containerized application in various types of Physical, virtual, and cloud environments. Google Kubernetes is highly flexible container tool to deliver even complex applications, consistently. Applications 'run on clusters of hundreds to thousands of individual servers."
+What is Kafka:
+                      Kafka is Fast, Scalable, Durable, and Fault-Tolerant publish-subscribe messaging system which can be used to real time data streaming. We can introduce Kafka as Distributed Commit Log which follows publish subscribe architecture.
+
+What is Zookeeper:
+                       Zookeeper is distributed systems configuration management tool. Kafka uses Zookeeper to mange electing a controller, Cluster membership, Topic configuration, Manage Quotas, Access control etc.
+Kubernetes Setup: 
+                       Deployed two node kubernetes cluster on Virtual Box. It contains one Master and one agent/worker node. Master node itself act as an agent node, so I can deploy pods on it then setup single node Kafka cluster with single node zookeeper cluster on this setup
+Kafka needs Zookeeper:  
+                        Kafka uses Zookeeper to do leadership election of Kafka Broker and Topic Partition pairs. Kafka uses Zookeeper to manage service discovery for Kafka Brokers that form the cluster. Zookeeper sends changes of the topology to Kafka, so each node in the cluster knows when a new broker joined, a Broker died, a topic was removed or a topic was added, etc. Zookeeper provides an in-sync view of Kafka Cluster configuration.
+Deploy zookeeper cluster:
+                            Kafka required zookeeper as the coordination services. First I need to deploy single node zookeeper cluster.
+Zookeeper deployment:
+                                        Create zookeeper deployment to deploy zookeeper containers/pods named zookeeper17 Following is the zk-deployment.yaml
+ 
+These containers expose 2181, 2881, 3881 ports. We can connect to zookeeper with 2181 port. Nodes using 2881, 3881 ports to connect with other nodes in the cluster.zookeeper17 environment variables are using to define the hosts of zookeeper nodes in the cluster. These variables are setup with zoo17
+Create deployment so run the below command
+$ kubectl  create -f  zk-deployment.yaml
+View pods
+$ kubectl get pods
+It should deploy one zookeeper containers/pods.
+ 
+Zookeeper service
+Then need to setup kubernetes services zoo17. Following is the zk-service.yaml
+ 
+These services expose 2181, 2881, 3881 ports. Finally I’m assigning zookeeper17  pod  for zoo17  service. Now I can create the services with kubectl
+Create service
+$ kubectl create –f zk-service.yaml
+List the Services
+$ kubectl get services
+ 
+Deploy Kafka cluster
+                            Now we have deployed one node zookeeper cluster. Next step is to setup kafka cluster with connecting to the previously deployed zookeeper cluster.
+Kafka deployment
+                              First create Kafka deployment to deploy one Kafka broker containers/pods kafka18. Following is the kafka-deployment.yaml
+ 
+Kafka container exposes 9092 port for clients. It uses KAFKA_ADVERTISED_HOST_NAME environment variable to define IP address which Kafka broker is running. External clients (external to kubernetes cluster) can connect to Kafka via this IP address. This value is set to the Kafka broker pod running host’s IP address (more info in below section). At the end it uses KAFKA_ZOOKEEPER_CONNECT to define endpoints of zookeeper cluster (these endpoints expose with kubernetes services). Now create the deployment with kubectl.
+Create deployment for Kafka Pod
+$ kubectl create -f zk-deployment.yaml
+View the all pods
+$ kubectl get pods
+It should deploy one Kafka on containers/pods.
+Kafka service
+Then need to setup Kafka services kaf18 and assign the Kafka deployments to them. Following is the kafka-service.yaml
+ 
+These services expose 9092 port which is the client port. Most importantly it uses external IPs field to define external IP addresses to this services. These IP addresses are setup with kubernetes node’s IP addresses. For an example 192.168.1.45 is the kubernetes master node’s IP address (kaf18 service is running on the master node). By using this IP addresses external client’s can connect to Kafka cluster which running on kubernetes. Finally I’m assigning kafka18 pod for kaf18 service. These services can deploy with kubectl.
+Create services
+$ kubectl create -f kafka-service.yaml 
+ 
+View services
+$ kubectl get services
+ 
+Test with kafkacat
+                              Create the Kafka topics and work with them. To test the Kafka using the Kafka command line client  kafkacat. With kafkacat do various operations on Kafka. Like list topics, create topics, create publisher/consumers etc.
+Install kafkacat on any node
+
+ $  sudo apt-get install kafkacat
+List topics
+Connect to one of the kafka broker on 192,168,1,45 and list the available topics.
+$  kafkacat -L -b <kafka broker host>:<kafka broker port>
+$ kafkacat -L –b <Master Ip> :9092  ;  kafkacat -L –b 192.168.1.45:9092
+Create publisher
+                     Create publisher for a topic call and publish the messages to that topic. If the given topic name does not exists, below command will automatically create a topic with given name.
+$ kafkacat -P -b <kafka broker host>:<kafka broker port> -t <topic>
+$ kafkacat -P –b 192.168.1.45:9092 -t  test
+Here publisher connecting to Kafka broker on 192.168.1.45 node
+Create consumer
+In here I’m creating consumers for topic test from Kafka broker on 192.168.1.45 node.
+$ kafkacat -C -b <kafka broker host>:<kafka broker port> -t <topic>
+$ kafkacat -C -b 192.168.1.45:9092 -t test
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+
+
+
