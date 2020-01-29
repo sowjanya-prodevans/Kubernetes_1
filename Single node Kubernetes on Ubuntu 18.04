@@ -1,0 +1,93 @@
+Introduction:
+Minikube is an open source tool that was developed to enable developers and system administrators to run a single cluster of Kubernetes on local machine. It starts a single node kubernetes cluster locally with small resource utilization.
+i.e.: It is an easy way to try out a Kubernetes (k8s) cluster locally. 
+Note: This is ideal for development tests and POC purposes,
+Minikube supports Kubernetes features: 
+•	DNS
+•	NodePorts
+•	ConfigMaps and Secrets
+•	Dashboards
+Minikube does not yet support Cloud Provider specific features:
+•	LoadBalancers
+•	PersistentVolumes
+•	Ingress
+Hypervisor choice for Minikube:
+It supports both Virtual Box and KVM hypervisors. But we are using Oracle Virtual Box
+Requirements:
+•	A Fresh Ubuntu 18.04 desktop installed on your system.
+•	A root password is set up on your system.
+
+Installation Process:
+
+	Will need to update your system with the latest version. You can do this by running the following command:
+
+$ sudo apt-get update –y
+
+Once the system is updated, restart your system to apply all the changes.
+
+	Install required packages 
+
+$ sudo apt-get install apt-transport-https
+$ sudo apt-get upgrade
+
+	Install virtual Box Hypervisor
+Minikube supports both KVM and Virtual Box hypervisor. So here we are using Virtual Box to system
+I.e. Install Virtual Box with the following Command
+
+ $ sudo apt-get install virtual box virtual box-ext-pack
+
+	Install Minikube
+First download the latest version of Minikube to your system 
+
+$ sudo wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+	Once the download is completed, copy the downloaded file under /usr/local/bin with the cp Command
+
+$ cp minikube-linux-amd64 /usr/local/bin/minikube
+
+	Run Execution permission to the minikube 
+
+$ sudo chmod 755 /usr/local/bin/minikube
+
+	Next, check the version of Minikube 
+
+$ sudo minikube version
+
+	Install kubectl on Ubuntu 18.04
+
+Kubectl is a tool to deploy and manage applications on Kubernetes. By default, Kubectl is not available in the Ubuntu 18.04 default repository. So, you will need to add Kubernetes repository to your system.
+Download and add the GPG key with the following command:
+
+ $ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+	Next, add Kubernetes apt repository 
+
+$  echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+
+	Next, update the repository and install Kubectl
+
+$ sudo apt-get update
+# sudot-get install 
+
+	Once the Kubectl has been installed, you can check the version
+
+$ kubectl version –o json
+
+	Start the Minikube
+
+$ Minikube start
+
+This will download the Virtual Box image and configure Kubernetes cluster 
+
+	Check the cluster status 
+
+$ kubectl cluster-info
+
+	We can also check the Kubectl default configuration
+
+$ kubectl config view
+
+	check the running nodes, on Minikube
+
+$ kubectl get pods
+
