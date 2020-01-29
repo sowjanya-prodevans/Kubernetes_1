@@ -1,0 +1,131 @@
+Introduction: 
+
+This Document indicates Kubernetes Introduction and setup Kubernetes Cluster on Ubuntu 16.04 with Kubeadm.
+Kubernetes: It is a container management system developed in the Google platform. It helps you to manage a containerized application in various types of Physical, virtual, and cloud environments. Google Kubernetes is highly flexible container tool to deliver even complex applications, consistently. Applications 'run on clusters of hundreds to thousands of individual servers."
+Why use Kubernetes?
+•	Kubernetes can run on-premises bare metal, OpenStack, public clouds Google, Azure, AWS, etc.
+•	Helps you to avoid vendor lock issues as it can use any vendor-specific APIs or services except where Kubernetes provides an abstraction, e.g., load balancer and storage.
+•	Containerization using kubernetes allows package software to serve these goals. It will enable applications that need to be released and updated without any downtime.
+•	Kubernetes allows you to assure those containerized applications run where and when you want and helps you to find resources and tools which you want to work.
+Features of Kubernetes
+•	Automated Scheduling
+•	Self-Healing Capabilities
+•	Automated rollouts & rollback
+•	Horizontal Scaling & Load Balancing
+•	Offers environment consistency for development, testing, and production
+•	Infrastructure is loosely coupled to each component can act as a separate unit
+•	Provides a higher density of resource utilization
+•	Offers enterprise-ready features
+•	Application-centric management
+•	Auto-scalable infrastructure
+•	You can create predictable infrastructure
+Pre-requisites to install Kubernetes:
+Master:
+•	2 GB RAM
+•	2 Cores of CPU
+Slave/ Node:
+•	1 GB RAM
+•	1 Core of CPU
+	Pre-Installation Steps on Both Master & Slave (To Install Kubernetes)
+The following steps have to be executed on both the Master and Node/Worker node machines. 
+First, login as ‘sudo’ user because the following set of commands need to be executed with ‘sudo’ permissions. Then, update your ‘apt-get’ repository.
+$ sudo su
+
+# apt-get update
+
+	Update the Hostnames
+Set Hostname to Master node and Worker node
+To change the hostname of both machines open the /etc/hostname using the vi and vim or nano 
+# nano /etc/hostname
+
+Now go to the ‘hosts’ file on both the master and node and add an entry specifying their respective IP addresses along with Hostname.  This is used for referencing them in the cluster.
+
+	Turn Off Swap Space
+Next, we have to turn off the swap space because Kubernetes will start throwing random errors
+# swapoff -a
+need to open the ‘fstab’ file and comment “#” the  swap line
+# nano /etc/fstab
+
+After that update the Nodes (Master and Worker Nodes)
+
+	Install OpenSSH-Server on All servers
+# sudo apt-get install openssh-server  
+
+	Install Docker on All Servers:
+Install Docker because Docker images will be used for managing the containers in the cluster. Run the following commands:
+# sudo su
+
+# apt-get update 
+
+# apt-get install -y docker.io
+
+Next we have to install these 3 essential components for setting up Kubernetes environment: kubeadm, kubectl, and kubelet.
+Run the following commands before installing the Kubernetes environment.
+
+# apt-get update && apt-get install -y apt-transport-https curl
+
+# curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+# cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+# apt-get update
+	Install kubeadm, Kubelet And Kubectl 
+
+Now install the 3 essential components. 
+
+Kubelet: It’s responsible for what’s running on an individual machine. 
+Kuebadm is used for administrating the Kubernetes cluster. 
+Kubectl is used for controlling the configurations on various nodes inside the cluster.
+
+# apt-get install -y kubelet kubeadm kubectl 
+
+	Steps Only for Kubernetes Master VM (Master node)
+
+Note: These steps will only be executed on the master VM (Master node).
+
+We will now start our Kubernetes cluster from the master’s node. Run the following command:
+
+# kubeadm init --apiserver-advertise-address=<ip-address-of-master-vm> --pod-network-cidr=192.168.0.0/16
+
+The commands marked as (1), execute them as a non-root user. This will enable you to use kubectl from the CLI
+The command marked as (2) should also be saved for future. This will be used to join nodes to your cluster
+run the commands from the above output as a non-root user
+
+$ mkdir -p $HOME/.kube
+
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+To verify, if kubectl is working or not, run the following command:
+
+$ kubectl get pods -o wide --all-namespaces
+
+We will notice from the previous command, that all the pods are running except one: ‘kube-dns’. For resolving this we will install a pod network. To install the CALICO pod network, run the following command:
+
+$ kubectl apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml  
+
+Note: but I am getting error. Even i added Calico network “kube-dns” pod status pending so 
+
+If we have to reset the Kubernetes using the kubeadm reset
+
+	Initialize the master using the following command
+
+ $ sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+
+Execute the following commands to configure kubectl 
+
+$ mkdir -p $HOME/.kube
+
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+	Install Calico with the following command
+
+$ Sudo kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+Confirm that all of the pods are running with the following command.
+
+ $ watch kubectl get pods --all-namespaces   or $ kubectl get pods –all-namespaces
